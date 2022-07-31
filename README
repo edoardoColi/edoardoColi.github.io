@@ -1,0 +1,16 @@
+# Prima di tutto, per collegarsi velocamente, torna comodo fare
+if ! [ -f ff_key ] || ! [ -f ff_key.pub ]; then																# If there are no keys, it generates them
+	rm -f poisson_key poisson_key.pub
+	ssh-keygen -f ~/.ssh/poisson_key -t rsa -N "" &>/dev/null
+fi
+ssh-copy-id -i ~/.ssh/poisson_key.pub ecoli@poisson.phc.dm.unipi.it &>/dev/null
+
+# Per mandare tutto su poisson
+rsync -rvP Desktop/Sito/ ecoli@poisson.phc.dm.unipi.it:public_html
+
+# Cancella tutto il sito
+ssh ecoli@poisson.phc.dm.unipi.it 'rm -fr public_html/*'
+
+# Per tutto il resto
+ssh ecoli@poisson.phc.dm.unipi.it
+

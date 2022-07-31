@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=7; IE=EmulateIE9">
+<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Your web site traffic map by Web-Stat</title>
+<script type="text/javascript" src="wixMaps_data/wix.min.js"></script>
+<link rel="stylesheet" href="wixMaps_data/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin="">
+<script src="wixMaps_data/leaflet.js" integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og==" crossorigin="" type="text/javascript"></script>
+<link rel="stylesheet" href="wixMaps_data/MarkerCluster.Default.css">
+<script src="wixMaps_data/leaflet.markercluster.js" type="text/javascript"></script>
+
+<script src="wixMaps_data/heatmap.min.js" type="text/javascript"></script>
+<script src="wixMaps_data/leaflet-heatmap.min.js" type="text/javascript"></script>
+
+<script src="wixMaps_data/leaflet-providers.min.js" type="text/javascript"></script>
+<style>
+
+.leaflet-fade-anim .leaflet-tile,.leaflet-zoom-anim .leaflet-zoom-animated { 
+   will-change:auto !important; 
+}
+
+#overlay{
+   position:absolute; 
+   top:0; 
+   left:0; 
+   width:100%; 
+   height:100%;
+   background:rgba(255,255,255,0);
+   z-index:1000;
+   display:none;
+}
+#premium_timer{
+   font: 1em Arial,Helvetica,sans-serif;
+   position:absolute; 
+   top:50%; left:50%; 
+   transform:translate(-50%,-50%);
+   border:1px solid #fff; 
+   background:rgba(49,151,239,0.6); 
+   color:#fff;
+   padding: 1em;
+   display:none;
+}
+#init_sticker{
+   font: 1em Arial,Helvetica,sans-serif;
+   position:absolute; 
+   width:65%;
+   top:50%; left:50%; 
+   transform:translate(-50%,-50%);
+   border:1px solid #fff; 
+   background:rgba(49,151,239,0.6); 
+   color:#fff;
+   padding: 0 1em;
+   display:none;
+}
+.legend { 
+   position:relative;  
+   bottom:5px;
+   z-index: 0;
+   border-radius: 10px;
+   border-width: 0;
+   color:#777;
+   background: rgba(255, 255, 255, 0.70);
+   padding:10px;
+}
+.dot{
+   height:15px;
+   width:15px;
+   border-radius: 50%;
+   display: inline-block;
+   vertical-align:middle;
+}
+.leaflet-control-zoom-fullscreen { 
+   background-image: url(icon_fullscreen.png); 
+}
+.leaflet-control-zoom-fullscreen.last { 
+   margin-top: 0px 
+}
+.leaflet-interactive {
+  cursor: default;
+}
+</style>
+<script type="text/javascript">
+
+///////////////////////
+function wtshInitMap(){
+
+//console.log("88411 / 0");
+
+   document.getElementById('map').style.width = window.innerWidth+'px';
+   document.getElementById('map').style.height = window.innerHeight+'px';
+
+   // create map
+   map = new L.Map('map',{minZoom: 1, attributionControl: false, zoomControl: true}).setView([mapInitLat, mapInitLong],mapInitZoom);
+
+   // add chosen layer
+   if (! layers[map_style]){
+      map_style = 'Default';
+   }
+   
+   if (map_style == 'Magellan' || map_style == 'Classic' || map_style == 'SatelliteLight'){
+      map.setZoom(2);
+   }
+
+   baseLayers[map_style] = L.tileLayer.provider(layers[map_style], {noWrap: false}).addTo(map);
+
+   clustersArray = new L.MarkerClusterGroup();
+
+   marker_red = L.icon({
+       iconUrl: 'https://app.ardalio.com/marker_l'+'_red.png',
+       iconSize: [20, 33],
+       iconAnchor: [10, 33],
+       tooltipAnchor:  [5, -24],
+       shadowUrl: 'https://app.ardalio.com/marker_l'+'_shadow.png',
+       shadowSize: [33,33],
+       shadowAnchor: [10, 33]
+   });
+
+
+   marker_orange = L.icon({
+       iconUrl: 'https://app.ardalio.com/marker_l'+'_orange.png',
+       iconSize: [18, 30],
+       iconAnchor: [9, 30],
+       tooltipAnchor:  [5, -22],
+       shadowUrl: 'https://app.ardalio.com/marker_l'+'_shadow.png',
+       shadowSize: [30,30],
+       shadowAnchor: [9, 30],
+   });
+
+
+   marker_blue = L.icon({
+       iconUrl: 'https://app.ardalio.com/marker_l'+'_blue.png',
+       iconSize: [16, 27],
+       iconAnchor: [8, 27],
+       tooltipAnchor:  [5, -19],
+       shadowUrl: 'https://app.ardalio.com/marker_l'+'_shadow.png',
+       shadowSize: [27,27],
+       shadowAnchor: [8, 27]
+   });
+
+
+   marker_green = L.icon({
+       iconUrl: 'https://app.ardalio.com/marker_l'+'_green.png',
+       iconSize: [14, 23],
+       iconAnchor: [7, 23],
+       tooltipAnchor:  [5, -18],
+       shadowUrl: 'https://app.ardalio.com/marker_l'+'_shadow.png',
+       shadowSize: [23,24],
+       shadowAnchor: [7, 23]
+   });
+
+
+
+   marker_invisible = L.icon({
+       iconUrl: '/pics/0.gif',
+       iconSize: [1, 1]
+   });
+
+
+   // show legend
+   if ("no" == "yes" && Wix.Utils.getDeviceType() != "mobile"){
+
+      var legend = L.control({ position: 'bottomleft' });
+      var legend_html;
+
+      legend.onAdd = function (map) { 
+
+      var div = L.DomUtil.create('div', 'legend');
+
+      if (point_type == 'points'){
+
+         var remaining;
+
+         legend_html = '<div style="text-align:left;"><span class="dot" style="background:#FA4F4D; margin-right:7px;"></span>latest visit';
+   
+         if (10 > 51){
+            remaining = 10 - 51;
+            legend_html =  legend_html+'<br><span class="dot" style="background:#FF9200; margin-right:7px;"></span>10 previous visits<br><span class="dot" style="background:#0092D7; margin-right:7px;"></span>40 previous visits<br><span class="dot" style="background:#00AB32; margin-right:7px;"></span>'+remaining+' previous visits';
+         }
+         else if (10 > 11){
+            remaining = 10 - 11;
+            legend_html =  legend_html+'<br><span class="dot" style="background:#FF9200; margin-right:7px;"></span>10 previous visits<br><span class="dot" style="background:#0092D7; margin-right:7px;"></span>'+remaining+' previous visits';
+         }
+         else if (10 > 1){
+            remaining = 10 - 51;
+            legend_html =  legend_html+'<br><span class="dot" style="background:#FF9200; margin-right:7px;"></span>'+remaining+' previous visits';
+         }
+         else{
+             legend_html =  legend_html+'</div>';
+         }
+      }
+      else {
+         legend_html = '<div style="text-align:center; color:#7661A4; margin:0.5em 1em; font-weight:bold;">last <span id="legend_text">10</span> visits</div>';
+      }
+   
+      div.innerHTML = legend_html;
+      return div;
+
+      };
+
+
+      legend.addTo(map);
+
+   }
+
+
+   setTimeout ( getNewMarkers, 5000 );
+
+
+   if ("no" == "yes"){
+      document.getElementById("overlay").style.display = "block";
+      document.getElementById("premium_timer").style.display = "block";
+      setTimeout(function(){ window.location.reload(); }, 15000);
+   }
+
+
+   if (viewMode == 'editor' && '10' == '0' && '' == '1'){
+      document.getElementById("overlay").style.display = "block";
+      document.getElementById("init_sticker").style.display = "block";
+   }
+
+
+   if (viewMode == 'editor' && "" == "1"){
+      ajaxSetTimezone(); 
+   }
+
+   map.scrollWheelZoom.disable();
+
+   map.on('zoomend', rememberPos);
+   map.on('moveend', rememberPos);
+
+}
+
+
+///////////////////////////
+function ajaxSetTimezone(){
+
+   if (typeof jstz !== "object"){
+      setTimeout( function(){ ajaxSetTimezone(); },300);
+   }
+
+   var tz = jstz.determine_timezone();
+   tz = tz.name();
+   if (! tz){
+      tz = "America/New_York";
+   }
+   if (tz == "America/Santa_Isabel"){
+      tz = "America/Mexico_City";
+   }
+   var instanceID = 'bcfb2e9b-2810-4576-84fc-0a9b687ef822';
+   if (tz){
+      var msg = '/wixMapsAjax.pl?nocache='+Math.random()+'&action=SetTimeZone&origin=wixMaps&params='+instanceID+':::'+tz;
+      ajaxRequest.open("GET", msg, true);
+      ajaxRequest.send(null); 
+   }
+}
+
+
+/////////////////////////
+function recordRemoved(){
+   var instanceID = 'bcfb2e9b-2810-4576-84fc-0a9b687ef822';
+   var msg='/wixMapsAjax.pl?nocache='+Math.random()+'&action=recordRemoved&origin=wixMaps&params='+instanceID;
+   ajaxRequest.open("GET", msg, true);
+   ajaxRequest.send(null);
+}
+
+/////////////////////////
+function recordSitePublished(){
+   var instanceID = 'bcfb2e9b-2810-4576-84fc-0a9b687ef822';
+   var msg='/wixMapsAjax.pl?nocache='+Math.random()+'&action=recordSitePublished&origin=wixMaps&params='+instanceID;
+   ajaxRequest.open("GET", msg, true);
+   ajaxRequest.send(null);
+}
+
+/////////////////////////
+function recordSiteSaved(){
+   var instanceID = 'bcfb2e9b-2810-4576-84fc-0a9b687ef822';
+   var msg='/wixMapsAjax.pl?nocache='+Math.random()+'&action=recordSiteSaved&origin=wixMaps&params='+instanceID;
+   ajaxRequest.open("GET", msg, true);
+   ajaxRequest.send(null);
+}
+
+
+
+/////////////////////////
+function rememberPos(e){
+
+   n_moves++;
+
+   if (n_moves == 1){
+      return;
+   }
+
+   if (map.getCenter().lng < -185){
+      map.panTo([map.getCenter().lat, -180]);
+   }
+   if (map.getCenter().lng > 185){
+      map.panTo([map.getCenter().lat, 180]);
+   }
+   if (map.getCenter().lat < -85){
+      map.panTo([-80,map.getCenter().lng]);
+   }
+   if (map.getCenter().lat > 85){
+      map.panTo([80,map.getCenter().lng]);
+   }
+
+
+
+}
+
+
+/////////////////////////
+function getNewMarkers(){
+
+   if (hold_up == 1){
+      setTimeout ( getNewMarkers, 5000 );
+      return;
+   }
+
+   var delay = document.getElementById("ajax_delay").innerHTML;
+   var last_id = document.getElementById("ajax_last_id").innerHTML;
+
+   var userID = "88411";
+   var db_number = "101";
+   var n_points = "100";
+   var delta_time = "7200";
+   var map_type = "last_visits";
+   var visitors_details = "no";
+
+   var msg = '/wixMapsAjax.htm?action=getNewMarkers&params='+userID+':::'+db_number+':::'+n_points+':::'+last_id+'::::::'+delay+':::'+delta_time+':::'+map_type+':::'+visitors_details+':::'+Math.random();
+
+   ajaxRequest.onreadystatechange = stateChanged;
+   ajaxRequest.open('GET', msg, true);
+   ajaxRequest.send(null);
+
+}
+
+
+
+////////////////////////
+function stateChanged(){
+
+   // if AJAX returned a list of markers, add them to the map
+
+   if (ajaxRequest.readyState==4) {
+
+      if (ajaxRequest.status==200) {
+
+         var response = ajaxRequest.responseText.split(":::");
+
+         var max_index = parseInt(document.getElementById("max_index").innerHTML);
+         var last_id = parseInt(response[1]);
+         var delay = response[2];
+         var details = response[3];
+         var details_array = details.split("**"); 
+
+         var loc_array,zindex,plotlist,i;
+
+         plotlist = eval("(" + response[4] + ")");
+
+         if (plotlist.length > 0){
+
+            markersArray[max_index].setIcon(marker_orange);
+
+            max_index = parseInt(max_index) + plotlist.length;
+            document.getElementById("max_index").innerHTML = max_index;
+            if (point_type == "points"){
+               zindex = max_index;
+               for (i = (plotlist.length-1); i>=0 ; i--) {
+                  loc_array = details_array[i].split("||"); 
+                  markersArray[zindex] = L.marker([plotlist[i].lat,plotlist[i].lon],{ zIndexOffset: (zindex*40), icon: marker_invisible, sessionID: 'loc_array[4]' }).addTo(map);
+                  if ("no" == "yes"){
+                     markersArray[zindex].bindTooltip('<table><tr><td style="vertical-align:middle;"><img src="'+loc_array[3]+'" style="width:35px; height:35px; margin-right:10px;"></td><td style="vertical-align:middle;"><b>'+loc_array[2]+'</b>&nbsp;<span style="font-size:0.9em;">'+loc_array[1]+'</span><br>'+loc_array[0]+'</td></tr></table>', { direction: 'auto'} );
+                  }
+                  var oldindex = parseInt(zindex - 100);
+                  if (markersArray[oldindex]){
+                     map.removeLayer(markersArray[oldindex]);
+                  }
+                  if (zindex == max_index){
+                    repaintMarkers(max_index,length,markersArray);
+                  }
+                  zindex--;
+               }
+            }
+            else if (point_type == "clustered"){
+               zindex = max_index;
+               for (i = (plotlist.length-1); i>=0 ; i--) {
+                  loc_array = details_array[i].split("||"); 
+                  markersArray[zindex] = L.marker([plotlist[i].lat,plotlist[i].lon],{icon: marker_blue, sessionID: loc_array[4]});
+                  if ("no" == "yes"){
+                     markersArray[zindex].bindTooltip('<table><tr><td style="vertical-align:middle;"><img src="'+loc_array[3]+'" style="width:35px; height:35px; margin-right:10px;"></td><td style="vertical-align:middle;"><b>'+loc_array[2]+'</b>&nbsp;<span style="font-size:0.9em;">'+loc_array[1]+'</span><br>'+loc_array[0]+'</td></tr></table>', { direction: 'auto'} );
+                  }
+                  clustersArray.addLayer(markersArray[zindex]);
+                  zindex--;
+               }
+            }
+            else if (point_type == "heat_map"){
+               for (i = (plotlist.length-1); i>=0 ; i--) {
+                  heatmapdata.push({lat: plotlist[i].lat, lng: plotlist[i].lon, count: 1});
+               }
+               map.removeLayer(heatmapLayer);
+               heatmapLayer.addData(heatmapdata);
+               map.addLayer(heatmapLayer);
+            }
+
+         }
+
+         document.getElementById("ajax_delay").innerHTML = delay;
+
+         document.getElementById("ajax_last_id").innerHTML = last_id;
+
+         if (! delay || delay < 5000){ delay=5000; }
+         if ('no' != 'no'){
+            setTimeout ( getNewMarkers, delay );
+         }
+
+      }
+      else{
+         if ('no' != 'no'){
+            setTimeout ( getNewMarkers, 10000 );
+         }
+      }
+   }
+}
+
+
+
+
+
+///////////////////////////////////////////////
+function blink(marker,hide,iteration){
+   if (iteration > 9){
+  //    repaintMarkers(max_index,length,markersArray);
+      return;
+   }
+   iteration++;
+   if (hide == 1){
+      marker.setIcon(marker_invisible);
+      setTimeout( function(){ blink(marker,'0',iteration); },200 );
+   }
+   else {
+      marker.setIcon(marker_red);
+      setTimeout( function(){ blink(marker,'1',iteration); },200 );
+   }
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+function repaintMarkers(max_index,length,markersArray){
+   var opacity = 1;
+   var color_index = 0;
+   for (var i=max_index; i >= 0; i--) {
+      if (! markersArray[i]){
+         break;
+      }
+      if (length < 10 && color_index == 0){
+         markersArray[i].setIcon(marker_red);
+      }
+      else if (color_index <= 11){
+         markersArray[i].setIcon(marker_orange);
+      }
+      else if (color_index <= 51){
+         markersArray[i].setIcon(marker_blue);
+      }
+      else{
+         markersArray[i].setIcon(marker_green);
+      }
+
+      opacity = (max_index - color_index)/max_index + color_index*0.4/max_index;
+      opacity = opacity.toFixed(2); 
+
+      markersArray[i].setZIndexOffset((i*40));
+      markersArray[i].setOpacity(opacity);
+
+      color_index++;
+
+    }
+
+   blink(markersArray[max_index],'1',0); 
+
+}
+
+
+//////////////////////
+function commify(x) {
+
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+}
+
+///////////////////////
+function holdUpdating(){
+
+   // if the user moves or zooms the map and a new marker drops at the same time
+   // it will be misplaced, so after a move is detected we hold updating for 5 seconds
+   hold_up = 1;
+   setTimeout ( function(){hold_up = 0;}, 5000 );
+
+}
+
+//////////////////////////////////////
+function adjustIconSize(marker,ratio){
+
+   ratio = 1+1.5*ratio;
+
+   var iconSize_w = 18*ratio;
+   var iconSize_h = 30*ratio;
+
+   var iconAnchor_w = 9*ratio;
+   var iconAnchor_h = 30*ratio;
+
+   var shadowSize_w = 30*ratio;
+   var shadowSize_h = 30*ratio;
+
+   var shadowAnchor_w = 9*ratio;
+   var shadowAnchor_h = 30*ratio;
+
+   var icon = marker.options.icon; 
+   icon.options.iconSize = [iconSize_w, iconSize_h];
+   icon.options.iconAnchor = [iconAnchor_w, iconAnchor_h];
+   icon.options.shadowSize = [shadowSize_w, shadowSize_h];
+   icon.options.shadowAnchor = [shadowAnchor_w, shadowAnchor_h];
+
+   marker.setIcon(icon);
+
+}
+
+
+////////////////////////////////////////////////////////////////////////////
+function addMarkerToMap(point_coordinates,point_display,point_label,index){
+
+
+   if (typeof map !== "object"){
+      setTimeout( function(){ addMarkerToMap(point_coordinates,point_display,point_label,index); } , 200);
+      return;
+   }
+
+
+   point_coordinates = eval(point_coordinates);
+   point_display = eval(point_display); 
+
+   if ("points" == "clusters"){
+      markersArray[index] = L.marker( point_coordinates,point_display );
+      clustersArray.addLayer(markersArray[index]);
+      map.addLayer(clustersArray);
+   }
+   else{
+      markersArray[index] = L.marker(point_coordinates,point_display).addTo(map);
+      markersArray[index].setZIndexOffset(index*40);  // leaflet uses latitude as zindex so we need to overcome by multiplying index
+   }
+
+   if ("no" == "yes"){
+      markersArray[index].bindTooltip( point_label, { direction: "auto" } );
+   }
+
+
+}
+
+
+//////////////////////////////////////
+function addHeatMapLayer(heatmapdata){
+
+   if (typeof map != "object"){
+      setTimeout( function(){ addHeatMapLayer(heatmapdata); } , 200);
+      return;
+   }
+
+   var data = { data: heatmapdata };
+
+   var cfg = {
+     "radius": 13,
+     "maxOpacity": 0.8,
+     "scaleRadius": false,
+     "useLocalExtrema": true,
+     latField: "lat",
+     lngField: "lng",
+     valueField: "count"
+   };
+
+
+   heatmapLayer = new HeatmapOverlay(cfg);
+
+   heatmapLayer.setData(data);
+
+   map.addLayer(heatmapLayer);
+
+}
+
+
+
+window.onerror = function(){ return true; };
+
+window.addEventListener('resize', function(event){
+   if (viewMode == "editor"){
+      document.getElementById('map').style.width = window.innerWidth+'px';
+      document.getElementById('map').style.height = window.innerHeight+'px';
+      map.fitWorld();
+   }
+   holdUpdating();
+});
+
+
+//Wix.addEventListener(Wix.Events.COMPONENT_DELETED, function() {
+//   recordRemoved();
+//});
+
+Wix.addEventListener(Wix.Events.SITE_PUBLISHED, function() {
+   recordSitePublished();
+});
+
+Wix.addEventListener(Wix.Events.SITE_SAVED, function() {
+   recordSiteSaved();
+});
+
+
+
+
+var ajaxRequest = new XMLHttpRequest();
+
+var viewMode = Wix.Utils.getViewMode();
+
+var map = 0;
+var baseLayers = {};
+var map_style = 'Default';
+var mapInitZoom = '7';
+var mapInitLat = '23';
+var mapInitLong = '20';
+var point_type = 'points';
+var hold_up = 0;
+var n_moves = 0;
+var clustersArray;
+var markersArray = [];
+var heatmapdata = [];
+var heatmapLayer;
+var clustersArray;
+var marker_red;
+var marker_blue;
+var marker_orange;
+var marker_green;
+var marker_invisible;
+
+// define object layers, with its properties
+var layers = {
+
+   'Default':'CartoDB.Voyager', 
+   'PhysicalLight':'Esri.WorldTopoMap',
+   'PhysicalMedium':'Esri.WorldStreetMap',
+   'PhysicalDark':'Esri.WorldPhysical',
+   'NatGeo':'Esri.NatGeoWorldMap',
+   'Topo':'OpenTopoMap',
+   'Magellan':'GeoportailFrance.ignMaps',
+   'Classic':'GeoportailFrance.maps',
+   'SatelliteLight':'GeoportailFrance.orthos',
+   'SatelliteDark':'Esri.WorldImagery', 
+   'Illuminations':'NASAGIBS.ViirsEarthAtNight2012',
+   'Greys1':'CartoDB.Positron',
+   'Greys2':'Stamen.TonerLite',
+   'BW':'Stamen.Toner',
+   'DarkMatter':'CartoDB.DarkMatter',
+   'Watercolor':'Stamen.Watercolor',
+   'CoolGreens':'Esri.WorldTerrain',
+   'ShadedRelief':'Esri.WorldShadedRelief',
+   'Terrain1':'Stamen.Terrain',
+   'Terrain2':'Esri.DeLorme',
+   'LightBlue':'CartoDB.Voyager',
+   'Wikimedia':'Wikimedia',
+   'CanvasGreys1':'Esri.WorldGrayCanvas',
+   'CanvasGreys2':'CartoDB.PositronNoLabels',
+   'CanvasBW':'Stamen.TonerBackground',
+   'CanvasDarkMatter':'CartoDB.DarkMatterNoLabels',
+   'CanvasTerrain1':'Stamen.TerrainBackground',
+   'CanvasLightBlue':'CartoDB.VoyagerNoLabels'
+
+
+};
+
+
+
+
+// launch script
+
+if(document.readyState !== 'loading'){
+   wtshInitMap();
+} 
+else if (typeof document.addEventListener === 'function'){
+   document.addEventListener('DOMContentLoaded', function () {
+      wtshInitMap();
+   }, false);
+}
+
+
+</script>
+<style wix-style="">.Title{ font:italic normal normal 110px/1.4em impact,impact-w01-2010,impact-w02-2010,impact-w10-2010,sans-serif; } .Menu{ font:normal normal normal 16px/1.4em din-next-w01-light,din-next-w02-light,din-next-w10-light,sans-serif; } .Page-title{ font:italic normal normal 38px/1.4em impact,impact-w01-2010,impact-w02-2010,impact-w10-2010,sans-serif; } .Heading-XL{ font:italic normal normal 55px/1.4em impact,impact-w01-2010,impact-w02-2010,impact-w10-2010,sans-serif; } .Heading-L{ font:italic normal normal 48px/1.4em impact,impact-w01-2010,impact-w02-2010,impact-w10-2010,sans-serif; } .Heading-M{ font:normal normal normal 30px/1.4em anton,sans-serif; } .Heading-S{ font:normal normal normal 19px/1.4em impact,impact-w01-2010,impact-w02-2010,impact-w10-2010,sans-serif; } .Body-L{ font:normal normal normal 17px/1.4em din-next-w01-light,din-next-w02-light,din-next-w10-light,sans-serif; } .Body-M{ font:normal normal normal 15px/1.4em din-next-w01-light,din-next-w02-light,din-next-w10-light,sans-serif; } .Body-S{ font:normal normal normal 11px/1.4em din-next-w01-light,din-next-w02-light,din-next-w10-light,sans-serif; } .Body-XS{ font:normal normal normal 10px/1.4em arial,ｍｓ ｐゴシック,ms pgothic,돋움,dotum,helvetica,sans-serif; } }</style><link type="text/css" rel="stylesheet" href="wixMaps_data/css.css" id="wix-google-fonts"><link type="text/css" rel="stylesheet" href="wixMapsWorker_data/languages-woff2.css"><style>:focus {
+    outline: none;
+}
+
+.js-focus-visible .focus-visible:focus,
+.js-focus-visible .focus-visible:focus ~ .wixSdkShowFocusOnSibling
+{
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.9), 0 0 1px 2px #3899EC;
+}
+</style><script src="wixMapsWorker_data/focus-visible.min.js" id="dynamic_script_FOCUS_VISIBLE"></script></head>
+<body class="js-focus-visible">
+<div class="mapouter"><div class="gmap_canvas"><iframe id="gmap_canvas" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2915.649708093222!2d10.890834964857815!3d43.048801199320735!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1329ec02efbcd993%3A0xf69d481474e3d713!2sOstello%20Sant'Anna!5e0!3m2!1sit!2sit!4v1573825994187!5m2!1sit!2sit" scrolling="no" marginheight="0" marginwidth="0" width="600" height="500" frameborder="0"></iframe><a href="https://fmovies-online.net/">fmovies</a><br><style>.mapouter{position:relative;text-align:right;height:500px;width:600px;}</style><a href="https://www.embedgooglemap.net/">google map embed generator</a><style>.gmap_canvas {overflow:hidden;background:none!important;height:500px;width:600px;}</style></div></div>
+<div id="overlay">
+<div id="premium_timer" style="text-align:center;"><div style="font-weight:bold; margin-bottom:0.5em;">Premium Function</div>10-second demo</div>
+<div id="init_sticker" style="position:relative;">
+<p style="font-weight:bold; text-align:center; text-decoration:underline;">How to Start the Map</p>
+<ol style="padding-left:1em; font-size:0.9em;">
+<li style="margin-bottom:0.3em;">Place and size the map on your page
+</li><li style="margin-bottom:0.3em;">Click on 'Settings' and choose your options
+</li><li style="margin-bottom:0.3em;">Save, and publish your site
+</li></ol>
+<p style="font-size:0.9em;">The map will then start detecting all your visitors automatically!</p>
+<p style="font-size:0.8em;">Note that your own visits from inside the editor are not counted. This is normal behavior.</p>
+</div>
+</div>
+<script type="text/javascript">
+
+addMarkerToMap("[41.7502,13.1595]","({ opacity: '0.93', zIndexOffset: '0', icon: marker_orange })","<table><tr><td style=\"vertical-align:middle;\"><img src=\"/pics/flags2/it.png\" style=\"width:35px; height:35px; margin-right:10px;\"></td><td style=\"vertical-align:middle;\"><b>Italy</b>&nbsp;<span style=\"font-size:0.9em;\">Anagni (Provincia di Frosinone, 03012)</span><br>Fri Jul 15 at 07:17:10 PM (your local time)<br></td></tr></table>","0");
+addMarkerToMap("[41.7502,13.1595]","({ opacity: '0.938', zIndexOffset: '1', icon: marker_orange })","<table><tr><td style=\"vertical-align:middle;\"><img src=\"/pics/flags2/it.png\" style=\"width:35px; height:35px; margin-right:10px;\"></td><td style=\"vertical-align:middle;\"><b>Italy</b>&nbsp;<span style=\"font-size:0.9em;\">Anagni (Provincia di Frosinone, 03012)</span><br>Sat Jul 16 at 12:50:06 AM (your local time)<br></td></tr></table>","1");
+addMarkerToMap("[41.7502,13.1595]","({ opacity: '0.946', zIndexOffset: '2', icon: marker_orange })","<table><tr><td style=\"vertical-align:middle;\"><img src=\"/pics/flags2/it.png\" style=\"width:35px; height:35px; margin-right:10px;\"></td><td style=\"vertical-align:middle;\"><b>Italy</b>&nbsp;<span style=\"font-size:0.9em;\">Anagni (Provincia di Frosinone, 03012)</span><br>Sat Jul 16 at 01:41:41 PM (your local time)<br></td></tr></table>","2");
+addMarkerToMap("[43.1479,12.1097]","({ opacity: '0.954', zIndexOffset: '3', icon: marker_orange })","<table><tr><td style=\"vertical-align:middle;\"><img src=\"/pics/flags2/it.png\" style=\"width:35px; height:35px; margin-right:10px;\"></td><td style=\"vertical-align:middle;\"><b>Italy</b>&nbsp;<span style=\"font-size:0.9em;\"></span><br>Sat Jul 16 at 11:45:38 PM (your local time)<br></td></tr></table>","3");
+addMarkerToMap("[41.7502,13.1595]","({ opacity: '0.962', zIndexOffset: '4', icon: marker_orange })","<table><tr><td style=\"vertical-align:middle;\"><img src=\"/pics/flags2/it.png\" style=\"width:35px; height:35px; margin-right:10px;\"></td><td style=\"vertical-align:middle;\"><b>Italy</b>&nbsp;<span style=\"font-size:0.9em;\">Anagni (Provincia di Frosinone, 03012)</span><br>Sun Jul 17 at 02:12:33 PM (your local time)<br></td></tr></table>","4");
+addMarkerToMap("[41.7502,13.1595]","({ opacity: '0.97', zIndexOffset: '5', icon: marker_orange })","<table><tr><td style=\"vertical-align:middle;\"><img src=\"/pics/flags2/it.png\" style=\"width:35px; height:35px; margin-right:10px;\"></td><td style=\"vertical-align:middle;\"><b>Italy</b>&nbsp;<span style=\"font-size:0.9em;\">Anagni (Provincia di Frosinone, 03012)</span><br>Sun Jul 17 at 05:41:24 PM (your local time)<br></td></tr></table>","5");
+addMarkerToMap("[41.7502,13.1595]","({ opacity: '0.978', zIndexOffset: '6', icon: marker_orange })","<table><tr><td style=\"vertical-align:middle;\"><img src=\"/pics/flags2/it.png\" style=\"width:35px; height:35px; margin-right:10px;\"></td><td style=\"vertical-align:middle;\"><b>Italy</b>&nbsp;<span style=\"font-size:0.9em;\">Anagni (Provincia di Frosinone, 03012)</span><br>Sun Jul 17 at 09:36:47 PM (your local time)<br></td></tr></table>","6");
+addMarkerToMap("[41.7502,13.1595]","({ opacity: '0.986', zIndexOffset: '7', icon: marker_orange })","<table><tr><td style=\"vertical-align:middle;\"><img src=\"/pics/flags2/it.png\" style=\"width:35px; height:35px; margin-right:10px;\"></td><td style=\"vertical-align:middle;\"><b>Italy</b>&nbsp;<span style=\"font-size:0.9em;\">Anagni (Provincia di Frosinone, 03012)</span><br>Mon Jul 18 at 12:59:37 PM (your local time)<br></td></tr></table>","7");
+addMarkerToMap("[41.7502,13.1595]","({ opacity: '0.994', zIndexOffset: '8', icon: marker_orange })","<table><tr><td style=\"vertical-align:middle;\"><img src=\"/pics/flags2/it.png\" style=\"width:35px; height:35px; margin-right:10px;\"></td><td style=\"vertical-align:middle;\"><b>Italy</b>&nbsp;<span style=\"font-size:0.9em;\">Anagni (Provincia di Frosinone, 03012)</span><br>Mon Jul 18 at 03:12:41 PM (your local time)<br></td></tr></table>","8");
+addMarkerToMap("[41.7502,13.1595]","({ opacity: '1.002', zIndexOffset: '9', icon: marker_red })","<table><tr><td style=\"vertical-align:middle;\"><img src=\"/pics/flags2/it.png\" style=\"width:35px; height:35px; margin-right:10px;\"></td><td style=\"vertical-align:middle;\"><b>Italy</b>&nbsp;<span style=\"font-size:0.9em;\">Anagni (Provincia di Frosinone, 03012)</span><br>Tue Jul 19 at 11:02:12 AM (your local time)<br></td></tr></table>","9");
+
+
+</script>
+<div id="ajax_delay" style="display:none;">5100</div>
+<div id="ajax_last_id" style="display:none;">30464727</div>
+<div id="max_index" style="display:none;">10</div>
+<script>(function(){var js = "window['__CF$cv$params']={r:'72d277655a113758',m:'1bsi38E0C6SunXdZpSOicTrJcR4pdsKE54lEoUAbY7g-1658223320-0-AWTMjYGEiU2fV7307DoeGhUa2iDLwYRvJHJKhD+4l+rFfR4ixlCaONWFilscnnYLBsc224yp2OTe8NLuwSJrjCYODeNPoRDy/hKVl8w9Q5THaqmP6HfMgae1HZV4LGEr1goP9mZgfMSksM/lMnG/9uR9bLB/bn7S5wk28sAFFEKjySsLQT4K4UkIzobYgPZ+/E28FqreKv87ySI16AYrtO9HEoOyRhDPJweX/VkCpVAnNIhiMmGC1uQ1xlDJL5RHMkyTFpvRKk/L8GOrLKNNglDAIDVlddqq5cjYnEo4DSQtg/Ty9CrvXt++K2wMPVK9iQKcWbiK9cOeDwZv1nRWQhSzeQ4/wBHBKpy6eL9V1Zt66k06krwjKWtRllfRQ+d8j7hl5wlmTqtQRldhrqhnPJUMhXLd1/YKnLB6fpFrY4jzADlJfSUzZftawnFUhWONACI0XZMJv4AJZ6dx6XRdxG8GnVR+47WleA1oWldo+hih8d+rQdWTFWxTZ0oZ7uWLO0r6W2JDoxfWO/MV4sFcOW25fJmFESOEImYjoJFfQeDnacLM6isitFwl3zWsObpWTPJX4Z1HxFy5j1MrVJPA4KXIJSe3mKfq5V9yzMBLVNj+XlhmJO5pdH42i+GyO3lTjrt9Tfi/MBfXqOGPOHngdPzu/Vn685DOxD3kDFo6GH3ShJbhF+t36Y0xR6NN8IidMwdjBCss58BZ2Zlgpi1BJT3Kmks+v0lVutWalr2YL9YdFf8AyJ0iTE9qz4qTMMHe4VngavrYWp6CHEM5HwE5kdofNdxF+EAgCu/L/MjCCJrZHlbSx5VgVsSU0pPloUj0ospA/TfhOT7TUWyytt4w/sjtp76aOLYT7nJ9bmRsMtpclNFwiIXBlwlJFzLI+WmCT8CgVjyzrKXap8REqOqm/jmkY7MG27OZgkUpoteuHZwC3UeBwhAajvNX8EPFPcw9vxO4OiBsxjafarcjcXiXlThQ5Bvg5Pd/SJwckPQAqZn+NAY58M3SC5i3HWH0i6Ey3+62vrE/PJaslTHBYQ/ivNxgORyWp0wQ7HMTknBB9vq6Av7iGSbL1oZOvU75iGLqqvV4s3UgSsShGvDN0+qFkfwcfQkVEQc/j0IB6JO9En6FF1e+G3bVHPG6tuIPVMGvhn/CxhHiRNliwT1g3I+7/YLJc7ikaTR/B9UsFnZdPrrIZQHnlz+OFs4FiAGpecgeWg==',s:[0x55eb2c7a76,0x1208c41eb1],u:'/cdn-cgi/challenge-platform/h/g'};var now=Date.now()/1000,offset=14400,ts=''+(Math.floor(now)-Math.floor(now%offset)),_cpo=document.createElement('script');_cpo.nonce='',_cpo.src='/cdn-cgi/challenge-platform/h/g/scripts/alpha/invisible.js?ts='+ts,document.getElementsByTagName('head')[0].appendChild(_cpo);";var _0xh = document.createElement('iframe');_0xh.height = 1;_0xh.width = 1;_0xh.style.border = 'none';_0xh.style.visibility = 'hidden';document.body.appendChild(_0xh);function handler() {var _0xi = _0xh.contentDocument || _0xh.contentWindow.document;if (_0xi) {var _0xj = _0xi.createElement('script');_0xj.innerHTML = js;_0xi.getElementsByTagName('head')[0].appendChild(_0xj);}}if (document.readyState !== 'loading') {handler();} else if (window.addEventListener) {document.addEventListener('DOMContentLoaded', handler);} else {var prev = document.onreadystatechange || function () {};document.onreadystatechange = function (e) {prev(e);if (document.readyState !== 'loading') {document.onreadystatechange = prev;handler();}};}})();</script><iframe style="border: medium none; visibility: hidden;" width="1" height="1"></iframe>
+</body></html>

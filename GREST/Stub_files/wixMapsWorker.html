@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="referrer" content="no-referrer">
+<script type="text/javascript" src="wixMapsWorker_data/wix.min.js"></script>
+<script type="text/javascript">
+var policyDetails = Wix.Worker.Utils.getCurrentConsentPolicy();
+var allow_cookies = policyDetails.policy.analytics;
+if (allow_cookies){
+   document.cookie = "wixmap_88411 = 1658223320; SameSite=None; Secure; path=/;";
+}
+
+Wix.Worker.addEventListener(Wix.Events.SITE_PUBLISHED, function() { 
+   recordSitePublished();
+});
+
+Wix.Worker.addEventListener(Wix.Events.SITE_SAVED, function() { 
+   recordSiteSaved();
+});
+
+//Wix.Worker.addEventListener(Wix.Events.COMPONENT_DELETED, function() { 
+//   recordRemoved(); 
+//});
+
+
+
+// set up AJAX request //
+ajaxRequest=getXmlHttpObject();
+function getXmlHttpObject(){
+   if (window.XMLHttpRequest) { return new XMLHttpRequest(); }
+   if (window.ActiveXObject)  { return new ActiveXObject("Microsoft.XMLHTTP"); }
+   return null;
+}
+
+/////////////////////////
+function recordRemoved(){
+   var instanceID = 'bcfb2e9b-2810-4576-84fc-0a9b687ef822';
+   var msg='/wixMapsAjax.pl?nocache='+Math.random()+'&action=recordRemoved&origin=worker&params='+instanceID;
+   ajaxRequest.open("GET", msg, true);
+   ajaxRequest.send(null);
+}
+
+/////////////////////////
+function recordSitePublished(){
+   var instanceID = 'bcfb2e9b-2810-4576-84fc-0a9b687ef822';
+   var msg='/wixMapsAjax.pl?nocache='+Math.random()+'&action=recordSitePublished&origin=worker&params='+instanceID;
+   ajaxRequest.open("GET", msg, true);
+   ajaxRequest.send(null);
+}
+
+/////////////////////////
+function recordSiteSaved(){
+   var instanceID = 'bcfb2e9b-2810-4576-84fc-0a9b687ef822';
+   var msg='/wixMapsAjax.pl?nocache='+Math.random()+'&action=recordSiteSaved&origin=worker&params='+instanceID;
+   ajaxRequest.open("GET", msg, true);
+   ajaxRequest.send(null);
+}
+
+
+</script>
+<style wix-style="">.Title{ font:italic normal normal 110px/1.4em impact,impact-w01-2010,impact-w02-2010,impact-w10-2010,sans-serif; } .Menu{ font:normal normal normal 16px/1.4em din-next-w01-light,din-next-w02-light,din-next-w10-light,sans-serif; } .Page-title{ font:italic normal normal 38px/1.4em impact,impact-w01-2010,impact-w02-2010,impact-w10-2010,sans-serif; } .Heading-XL{ font:italic normal normal 55px/1.4em impact,impact-w01-2010,impact-w02-2010,impact-w10-2010,sans-serif; } .Heading-L{ font:italic normal normal 48px/1.4em impact,impact-w01-2010,impact-w02-2010,impact-w10-2010,sans-serif; } .Heading-M{ font:normal normal normal 30px/1.4em anton,sans-serif; } .Heading-S{ font:normal normal normal 19px/1.4em impact,impact-w01-2010,impact-w02-2010,impact-w10-2010,sans-serif; } .Body-L{ font:normal normal normal 17px/1.4em din-next-w01-light,din-next-w02-light,din-next-w10-light,sans-serif; } .Body-M{ font:normal normal normal 15px/1.4em din-next-w01-light,din-next-w02-light,din-next-w10-light,sans-serif; } .Body-S{ font:normal normal normal 11px/1.4em din-next-w01-light,din-next-w02-light,din-next-w10-light,sans-serif; } .Body-XS{ font:normal normal normal 10px/1.4em arial,ｍｓ ｐゴシック,ms pgothic,돋움,dotum,helvetica,sans-serif; } }</style><link type="text/css" rel="stylesheet" href="wixMapsWorker_data/languages-woff2.css"><style>:focus {
+    outline: none;
+}
+
+.js-focus-visible .focus-visible:focus,
+.js-focus-visible .focus-visible:focus ~ .wixSdkShowFocusOnSibling
+{
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.9), 0 0 1px 2px #3899EC;
+}
+</style><script src="wixMapsWorker_data/focus-visible.min.js" id="dynamic_script_FOCUS_VISIBLE"></script></head>
+<body class="js-focus-visible">
+<script>(function(){var js = "window['__CF$cv$params']={r:'72d277657a313758',m:'ypyuFHb2XbIixcsu4sgvg43xQGNkk1cj.U7uv4u_b_0-1658223320-0-AbzsfcdAOwYj0CgJZsXXW5SAOByRUgGmU09H8E/MuF7eRmuyatYlJzaEltT9bFbujJ96gnhuxFygS4lwxXYZSnOm/2bPqqFNNhoei3LY+Q9zY2bHwl7O0fADSKKcTi6ThRVyrzdBFITYX/zfxNUlZTrU2lCydWkVbPkglfRdhD99aOIFJw7l4+1A/IAiUF7lKAaqBnEDEmjiKo2d8434C0VgNoQqMF/Lplt8JpgaO/cN1WbanoDof+4rnILGWhFgcl+hKky+D/D3N1N2F9uP4mQonV1aF7N6Mj7D5AQxOV0aJGIvTc1yF6NFOixNfzCFVU9dBQY5E6zfwuh3MQg3+g4TUStlhlXPNizeTdoqF95uEh2/3519nXIbHKOCPk3A2YH0lAPPvZSI40wKObxsqJbgAl0bdjFxHZOEWQQ40b/Q3YGCOWFHgjNxCHeaFPCitENfhom2xHDlxvkSglPljf/3FTocc46KHGYgKYBvDWYOzEmU5ECA2EcCO1qJAM7V7ovZO+KtfOPp8nh3Apuzd7r15hAhH/Qka6FJV5r+TziMP2KmwVlDDUafu9oN8EIjS+l/+gld3tpHHCHC9nzx92E4oVLF9fiXN8G09n6ZDIK5QkfigKf94n7sJE06N1ZTkcehd/y8mLW6v0NRN1+4p4KVY2XpVNtntGawiMvo+icXFiCVhIgMQ+nTz4kYvCjI0r8qJJ9bWJlOMsl+2QyLanazGRUDgZ7MavV9x2XkPdwjRFyuiZwmib3Nw40xbgsSEnSCgeNlArMpGH/H0NG2tTr0KwwPuVGK4vPuVhvHaAdeAH6WdQs5BLL+Ze/a0v7EkXD1y/slZR7nm/XXUq0xMXC2ikVOzmUPCL+qopkNK6OVQNiXB0JVr84cTAIkKgAafZzqaRh+1rv9++r9pJu+4q8WrkYSZfEqhz3I0vYfnYotyUOPmfaJ2BBX9TvoSzVCqLX1m57UGy24dDVz1Kv8oO8a2M2yhBvlVZLN7tTpmtplSO7/4mES44r53L8aB3KpDerTvR0pGoYlEZyG8v4EVtpD5nmx69tjBP1b9wMM1+rGlEx9ts+k/w3+1ATxgoizGVIZQx4dlWfk+wW87Rze/6F/OKkn7zMlzkDCy7G39C50OlKShdxh9i7SF1rd4F30lQLW7E6JAXxU6Wr8SR/xnlcmNNDLIAjHDWmRC+W2ehM/9QxaU3dpaHYEYG83+7q3kLxNdYu5VY4BkFf2N1tSxKg=',s:[0x11fd9fd1da,0xb863f970fe],u:'/cdn-cgi/challenge-platform/h/g'};var now=Date.now()/1000,offset=14400,ts=''+(Math.floor(now)-Math.floor(now%offset)),_cpo=document.createElement('script');_cpo.nonce='',_cpo.src='/cdn-cgi/challenge-platform/h/g/scripts/alpha/invisible.js?ts='+ts,document.getElementsByTagName('head')[0].appendChild(_cpo);";var _0xh = document.createElement('iframe');_0xh.height = 1;_0xh.width = 1;_0xh.style.border = 'none';_0xh.style.visibility = 'hidden';document.body.appendChild(_0xh);function handler() {var _0xi = _0xh.contentDocument || _0xh.contentWindow.document;if (_0xi) {var _0xj = _0xi.createElement('script');_0xj.innerHTML = js;_0xi.getElementsByTagName('head')[0].appendChild(_0xj);}}if (document.readyState !== 'loading') {handler();} else if (window.addEventListener) {document.addEventListener('DOMContentLoaded', handler);} else {var prev = document.onreadystatechange || function () {};document.onreadystatechange = function (e) {prev(e);if (document.readyState !== 'loading') {document.onreadystatechange = prev;handler();}};}})();</script><iframe style="border: medium none; visibility: hidden;" width="1" height="1"></iframe>
+
+</body></html>
